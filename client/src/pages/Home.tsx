@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import { useMutation } from "@tanstack/react-query";
 import { apiRequest } from "@/lib/queryClient";
 import { HeroSection } from "@/components/HeroSection";
@@ -23,7 +23,6 @@ export default function Home() {
     mutationFn: async (query: string) => {
       const response = await apiRequest("POST", "/api/search", {
         query,
-        sources: selectedSources.length > 0 ? selectedSources : undefined,
       });
       const data = await response.json();
       return data as SearchResponse;
@@ -44,6 +43,22 @@ export default function Home() {
       });
     },
   });
+
+  // Filter results on the client side based on selected sources
+  const filteredResponse = useMemo(() => {
+    if (!searchResponse) return null;
+    if (selectedSources.length === 0) return searchResponse;
+    
+    const filteredResults = searchResponse.results.filter(
+      (result) => selectedSources.includes(result.book.source)
+    );
+    
+    return {
+      ...searchResponse,
+      results: filteredResults,
+      totalResults: filteredResults.length,
+    };
+  }, [searchResponse, selectedSources]);
 
   const handleSearch = (query: string) => {
     setLastQuery(query);
@@ -100,11 +115,11 @@ export default function Home() {
             <ErrorState message={searchError} onRetry={handleRetry} />
           )}
           
-          {!searchMutation.isPending && !searchError && searchResponse && searchResponse.results && searchResponse.results.length > 0 && (
-            <SearchResults response={searchResponse} />
+          {!searchMutation.isPending && !searchError && filteredResponse && filteredResponse.results && filteredResponse.results.length > 0 && (
+            <SearchResults response={filteredResponse} />
           )}
           
-          {!searchMutation.isPending && !searchError && hasSearched && searchResponse && (!searchResponse.results || searchResponse.results.length === 0) && (
+          {!searchMutation.isPending && !searchError && hasSearched && filteredResponse && (!filteredResponse.results || filteredResponse.results.length === 0) && (
             <EmptyState />
           )}
 

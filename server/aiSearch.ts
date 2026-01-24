@@ -74,7 +74,7 @@ User's search query: "${query}"
 Available books catalog:
 ${JSON.stringify(catalogSummary, null, 2)}
 
-Analyze the query and return the top 10 most relevant books. Return JSON in this exact format:
+Analyze the query and return ALL books that have any relevance to the query (even with low scores). Return JSON in this exact format:
 {
   "matches": [
     {
@@ -111,9 +111,9 @@ Only return valid JSON, no additional text.`,
 
     const aiResponse: AIResponse = JSON.parse(jsonText);
 
-    // Map AI results to full book data
+    // Map AI results to full book data - show ALL matches
     const results: SearchResult[] = aiResponse.matches
-      .filter((match) => match.relevanceScore > 20) // Filter very low matches
+      .filter((match) => match.relevanceScore > 10) // Include even low relevance matches
       .map((match) => {
         const book = filteredCatalog.find((b) => b.id === match.bookId);
         if (!book) return null;
@@ -128,8 +128,7 @@ Only return valid JSON, no additional text.`,
         };
       })
       .filter((result): result is SearchResult => result !== null)
-      .sort((a, b) => b.relevanceScore - a.relevanceScore)
-      .slice(0, 10);
+      .sort((a, b) => b.relevanceScore - a.relevanceScore);
 
     const searchTime = (Date.now() - startTime) / 1000;
 
@@ -172,8 +171,7 @@ function fallbackSearch(
       };
     })
     .filter((result) => result.relevanceScore > 0)
-    .sort((a, b) => b.relevanceScore - a.relevanceScore)
-    .slice(0, 10);
+    .sort((a, b) => b.relevanceScore - a.relevanceScore);
 
   const searchTime = (Date.now() - startTime) / 1000;
 

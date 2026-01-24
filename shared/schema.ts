@@ -1,7 +1,7 @@
 import { z } from "zod";
 
 // Book sources - the platforms we aggregate from
-export const bookSources = ["exotic_india", "gita_press", "chaukhamba", "archive_org"] as const;
+export const bookSources = ["exotic_india", "gita_press", "chaukhamba", "archive_org", "amazon", "flipkart", "bookish_santa", "vedic_books", "mlbd"] as const;
 export type BookSource = typeof bookSources[number];
 
 // Book schema for spiritual literature
@@ -94,6 +94,41 @@ export const platforms: SourcePlatform[] = [
     description: "Public domain spiritual texts and manuscripts",
     baseUrl: "https://archive.org",
     logoColor: "#428BCA",
+  },
+  {
+    id: "amazon",
+    name: "Amazon",
+    description: "Wide selection of spiritual books with fast delivery",
+    baseUrl: "https://www.amazon.in",
+    logoColor: "#FF9900",
+  },
+  {
+    id: "flipkart",
+    name: "Flipkart",
+    description: "Popular Indian e-commerce platform for books",
+    baseUrl: "https://www.flipkart.com",
+    logoColor: "#2874F0",
+  },
+  {
+    id: "bookish_santa",
+    name: "Bookish Santa",
+    description: "Curated collection of rare and spiritual books",
+    baseUrl: "https://www.bookishsanta.com",
+    logoColor: "#E74C3C",
+  },
+  {
+    id: "vedic_books",
+    name: "Vedic Books",
+    description: "Specialized in Vedic and Sanskrit literature",
+    baseUrl: "https://www.vedicbooks.net",
+    logoColor: "#8E44AD",
+  },
+  {
+    id: "mlbd",
+    name: "MLBD",
+    description: "Motilal Banarsidass - academic publisher since 1903",
+    baseUrl: "https://www.mlbd.com",
+    logoColor: "#2C3E50",
   },
 ];
 
