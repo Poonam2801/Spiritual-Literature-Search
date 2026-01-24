@@ -1,0 +1,38 @@
+PRD: Spiritual Literature Contextual Search & Aggregator
+1. Introduction & Vision
+• Problem Statement: Users find it difficult to search for spiritual books across disparate platforms like Exotic India, Gitapress, Chaukhama, and Archive.org based on specific contextual or philosophical queries.
+• Vision: Create a unified portal that uses AI to understand the context of a user's search and present relevant results in a clean, card-based layout.
+• Target Audience: Scholars, practitioners, and seekers interested in Indian spiritual literature.
+2. Goals & Success Metrics
+• Business Goal: Provide a "single source of truth" for spiritual literature availability and pricing.
+• AI Performance Metrics: The AI-generated descriptions must retain at least 95% accuracy regarding the book's core philosophical concepts.
+• Success Metric: Search results must appear in under 2 seconds to ensure high user satisfaction.
+3. Data Strategy (The "Ingredient List")
+Data in AI products is the raw material the model transforms into value; therefore, your PRD must explicitly define the "ingredient list".
+• Input Sources:
+    ◦ Exotic India: Product titles, descriptions, and INR/USD costs.
+    ◦ Gita Press: Catalog titles and standardized pricing.
+    ◦ Chaukhama: Academic spiritual titles and availability status.
+    ◦ Archive.org: Public domain metadata and text snippets for contextual analysis.
+• Data Quality Threshold: Scraping must achieve a 98% accuracy rate for price and availability data.
+4. Sequential Implementation Phases (For Antigravity/Replit)
+When writing for an AI coding agent, specify foundations before features to manage technical dependencies.
+• Phase 1: Foundations (Database & Schema):
+    ◦ Establish a database schema that can store titles, multilingual descriptions, price points, and source URLs.
+• Phase 2: Core Scraping Engine:
+    ◦ Develop modular scrapers for the four target platforms, ensuring proper handling of site-specific HTML structures.
+• Phase 3: AI Integration (Google AI Studio):
+    ◦ Integrate Gemini via the Gemini API to perform contextual search.
+    ◦ System Prompt: The model should act as an expert librarian in spiritual literature, matching user intent (e.g., "Non-duality for beginners") to book metadata.
+• Phase 4: UI/UX Development:
+    ◦ Implement a card layout displaying the book title, a generated small description (max 200 characters), and the cost.
+    ◦ Confidence Communication: Include a visual cue if the AI is less than 80% sure about a contextual match.
+5. Technical Requirements & AI UX
+• Model Selection: Use Claude 3.5 Sonnet or Gemini 1.5 Pro for contextual reasoning and metadata extraction.
+• Escape Hatch Strategy: Every card should have a direct link to the original source website in case the AI-generated description is insufficient.
+• Edge Case Handling: Define behavior for when a book has no price listed or is out of stock on the target site.
+6. Out of Scope (The "Not-Now" List)
+• Native mobile applications (MVP will be web-based).
+• Direct payment processing within the app (users will be redirected to the source).
+
+--------------------------------------------------------------------------------
