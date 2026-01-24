@@ -1,0 +1,25 @@
+Below are the expanded search and scoring requirements to include in your PRD for Replit and Google AI Studio:
+1. Groundedness as a Core Functional Requirement
+To guarantee that the book has content on your keyword, the search engine must use groundedness metrics.
+• Definition: Groundedness measures how accurately a model’s retrieval or summary aligns with information from the input sources (the scraped text from Exotic India, Gita Press, etc.).
+• Implementation: Instead of just scraping titles, your "Core Scraping Engine" must ingest book indices, table of contents, or back-cover descriptions.
+• System Prompt Instruction: For Google AI Studio, the system prompt should specify that the model must only return books where the keyword is a confirmed topic of discussion within the metadata or available snippets, rather than assuming relevance based on a "vibe".
+2. Data Strategy: The "Ingredient List"
+A high-quality AI PRD treats data as a primary product component rather than just infrastructure.
+• Functional Specification: You must define a specific "ingredient list" for your database schema, including fields for contextual_snippets, theological_tags, and indexed_chapters.
+• Data Thresholds: Establish completeness thresholds (e.g., ≥95% of books must have a description field) to prevent model confusion caused by missing inputs.
+3. Advanced Search & Scoring Logic
+Your scoring engine should move beyond binary "Yes/No" results to probabilistic performance metrics.
+• Similarity Metric: Use the Gemini API to measure the similarity (the equivalence between search intent and book content) and relevance (how pertinent the book's specific chapters are to the prompt).
+• Accuracy Targets: Your PRD should specify an accuracy target (e.g., 95% correctly identified contexts) against a small labeled test dataset to ensure the AI isn't just hallucinating connections.
+• Hallucination Limits: Define strict hallucination rate limits—if the AI cannot find a direct textual link between the book and "Chinnmastika," the book must be excluded from the results.
+4. User Interface: Confidence & Attribution
+Because AI can produce suboptimal or ungrounded results, the PRD should include AI-native UX patterns to build user trust.
+• Confidence Communication: If the system is only 80% sure a book contains content on your keyword, the UI should display a "Potential Match" tag.
+• Attribution & Citations: The book card must include a citation or snippet showing exactly where the keyword was mentioned (e.g., "Mentioned in Chapter 4: The Ten Mahavidyas"). This allows you to verify the content before purchasing.
+5. Implementation Phases (Optimized for Agents like Replit)
+When providing these instructions to Replit, use Sequential Phases to ensure the retrieval foundation is stable before the AI logic is added:
+• Phase 1 (Foundations): Build a JSON-first data model that stores more than just titles.
+• Phase 2 (Scraping): Focus on extracting "content-heavy" fields (indices, long descriptions).
+• Phase 3 (AI Integration): Apply metaprompt adjustments in Google AI Studio to increase the answer rate for in-domain spiritual queries.
+• Phase 4 (Evaluation): Conduct an adversarial red-teaming session where you test the search with obscure spiritual keywords to see if the system returns "hallucinated" books.

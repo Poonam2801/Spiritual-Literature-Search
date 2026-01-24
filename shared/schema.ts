@@ -4,7 +4,7 @@ import { z } from "zod";
 export const bookSources = ["exotic_india", "gita_press", "chaukhamba", "archive_org", "amazon", "flipkart", "bookish_santa", "vedic_books", "mlbd"] as const;
 export type BookSource = typeof bookSources[number];
 
-// Book schema for spiritual literature
+// Book schema for spiritual literature with enhanced metadata for groundedness
 export const bookSchema = z.object({
   id: z.string(),
   title: z.string(),
@@ -18,8 +18,16 @@ export const bookSchema = z.object({
   isAvailable: z.boolean().default(true),
   language: z.string().default("Sanskrit"),
   category: z.string().optional(),
-  imageUrl: z.string().optional(),
+  imageUrl: z.string().nullable().optional(),
   confidenceScore: z.number().min(0).max(100).optional(),
+  // Enhanced metadata for groundedness and accurate matching
+  tableOfContents: z.array(z.string()).optional(), // Chapter/section titles
+  theologicalTags: z.array(z.string()).optional(), // e.g., ["Advaita", "Kundalini", "Bhakti"]
+  keyTopics: z.array(z.string()).optional(), // Specific topics covered in the book
+  contextualSnippets: z.array(z.object({
+    chapter: z.string().optional(),
+    text: z.string(),
+  })).optional(), // Relevant text excerpts that prove content
 });
 
 export type Book = z.infer<typeof bookSchema>;
@@ -35,11 +43,21 @@ export const searchQuerySchema = z.object({
 
 export type SearchQuery = z.infer<typeof searchQuerySchema>;
 
-// Search result with AI-enhanced metadata
+// Match confidence tiers for UI display
+export const matchConfidenceTiers = ["strong", "good", "potential", "weak"] as const;
+export type MatchConfidenceTier = typeof matchConfidenceTiers[number];
+
+// Search result with AI-enhanced metadata and groundedness info
 export const searchResultSchema = z.object({
   book: bookSchema,
   relevanceScore: z.number().min(0).max(100),
   matchReason: z.string().optional(),
+  // Enhanced groundedness fields
+  confidenceTier: z.enum(matchConfidenceTiers).optional(), // strong (90+), good (70-89), potential (50-69), weak (<50)
+  citationSnippet: z.string().optional(), // Excerpt showing where keyword was found
+  citationLocation: z.string().optional(), // e.g., "Chapter 4: The Ten Mahavidyas"
+  matchedTopics: z.array(z.string()).optional(), // Which topics matched the query
+  isGrounded: z.boolean().optional(), // True if match is verified against content
 });
 
 export type SearchResult = z.infer<typeof searchResultSchema>;

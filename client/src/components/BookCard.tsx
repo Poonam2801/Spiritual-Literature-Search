@@ -1,4 +1,4 @@
-import { ExternalLink, BookOpen, IndianRupee, DollarSign, AlertTriangle } from "lucide-react";
+import { ExternalLink, BookOpen, IndianRupee, DollarSign, AlertTriangle, Quote, CheckCircle2, HelpCircle } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -11,7 +11,7 @@ interface BookCardProps {
 }
 
 export function BookCard({ result }: BookCardProps) {
-  const { book, relevanceScore, matchReason } = result;
+  const { book, relevanceScore, matchReason, confidenceTier, citationSnippet, citationLocation, matchedTopics, isGrounded } = result;
   const priceIcon = book.currency === "INR" ? IndianRupee : DollarSign;
   const PriceIcon = priceIcon;
 
@@ -65,12 +65,43 @@ export function BookCard({ result }: BookCardProps) {
               {book.aiDescription || book.description}
             </p>
 
-          {/* Match reason if available */}
-          {matchReason && relevanceScore < 80 && (
-            <div className="flex items-start gap-2 p-3 bg-muted/50 rounded-md">
-              <AlertTriangle className="h-4 w-4 text-amber-500 mt-0.5 shrink-0" />
+          {/* Citation showing where keyword was found - for grounded matches */}
+          {citationLocation && (
+            <div className="flex items-start gap-2 p-3 bg-primary/5 border border-primary/20 rounded-md">
+              <Quote className="h-4 w-4 text-primary mt-0.5 shrink-0" />
+              <div className="text-xs">
+                <p className="font-medium text-foreground">{citationLocation}</p>
+                {citationSnippet && (
+                  <p className="text-muted-foreground mt-1 italic">"{citationSnippet}"</p>
+                )}
+              </div>
+            </div>
+          )}
+
+          {/* Matched topics badges */}
+          {matchedTopics && matchedTopics.length > 0 && (
+            <div className="flex items-center gap-1.5 flex-wrap">
+              <span className="text-xs text-muted-foreground">Matched:</span>
+              {matchedTopics.slice(0, 3).map((topic) => (
+                <Badge key={topic} variant="secondary" className="text-xs">
+                  {topic}
+                </Badge>
+              ))}
+            </div>
+          )}
+
+          {/* Confidence tier indicator */}
+          {confidenceTier && confidenceTier !== "strong" && (
+            <div className="flex items-start gap-2 p-2 bg-muted/50 rounded-md">
+              {confidenceTier === "potential" ? (
+                <HelpCircle className="h-4 w-4 text-amber-500 mt-0.5 shrink-0" />
+              ) : (
+                <CheckCircle2 className="h-4 w-4 text-green-500 mt-0.5 shrink-0" />
+              )}
               <p className="text-xs text-muted-foreground">
-                {matchReason}
+                {confidenceTier === "good" && "Good match based on content analysis"}
+                {confidenceTier === "potential" && "Potential match - verify content before purchase"}
+                {matchReason && ` - ${matchReason}`}
               </p>
             </div>
           )}
