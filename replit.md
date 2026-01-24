@@ -4,8 +4,10 @@
 A unified portal for discovering spiritual literature across multiple platforms using AI-powered contextual search. Users can search for books on Vedanta, Yoga, Non-duality, Buddhism, and more with natural language queries.
 
 ## Recent Changes
+- **Jan 2026**: Implemented groundedness-based search with hallucination prevention - only returns books where topics are verified in metadata; added confidence tiers (Strong/Good/Potential Match) and citation display showing WHERE keywords are found in books
+- **Jan 2026**: Enriched book catalog with rich metadata: tableOfContents, theologicalTags, keyTopics, contextualSnippets; added Mahavidya/Chinnamasta specialist texts for testing obscure keywords
 - **Jan 2026**: Expanded to 9 platforms (Amazon, Flipkart, Bookish Santa, Vedic Books, MLBD added); now shows ALL matching books with scores instead of just top 10; client-side filtering for instant results
-- **Jan 2026**: Added book cover images to search results and expanded catalog to 40+ titles including Hindi books (Devanagari script)
+- **Jan 2026**: Added book cover images to search results and expanded catalog to 60+ titles including Hindi books (Devanagari script)
 - **Jan 2026**: Initial MVP implementation with Gemini AI integration for contextual search
 
 ## Architecture
