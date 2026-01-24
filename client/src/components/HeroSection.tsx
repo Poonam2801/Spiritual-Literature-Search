@@ -1,13 +1,8 @@
-import { BookOpen, Library, Sparkles, Globe } from "lucide-react";
+import { Library, Sparkles, Globe } from "lucide-react";
 
 export function HeroSection() {
   return (
     <div className="text-center mb-10">
-      {/* Logo and Title */}
-      <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-primary/10 mb-6">
-        <BookOpen className="h-8 w-8 text-primary" />
-      </div>
-      
       <h1 className="font-serif text-4xl md:text-5xl font-bold text-foreground mb-4 tracking-tight">
         Spiritual Literature Search
       </h1>
