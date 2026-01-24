@@ -79,7 +79,7 @@ export default function Home() {
         <div className="container mx-auto px-4 py-3 flex items-center justify-between">
           <div className="flex items-center gap-2">
             <span className="font-serif text-lg font-semibold text-foreground">
-              Sacred Texts
+              The Seeker's Library
             </span>
           </div>
           <ThemeToggle />
@@ -95,7 +95,7 @@ export default function Home() {
           <SearchBar 
             onSearch={handleSearch} 
             isLoading={searchMutation.isPending}
-            placeholder="Describe what you're looking for (e.g., 'texts on meditation from Patanjali')"
+            placeholder="What wisdom do you seek? (e.g., 'teachings on liberation')"
           />
         </div>
 
@@ -127,16 +127,16 @@ export default function Home() {
           {!hasSearched && !searchMutation.isPending && !searchError && (
             <div className="text-center py-16">
               <p className="text-lg text-muted-foreground mb-6">
-                Start your journey by searching for spiritual literature above
+                Begin your quest for eternal truth in the sacred scriptures
               </p>
               <div className="flex flex-wrap gap-3 justify-center max-w-2xl mx-auto">
                 {[
-                  "Advaita Vedanta introduction",
-                  "Bhagavad Gita with commentary",
-                  "Patanjali Yoga Sutras",
-                  "Upanishads translations",
-                  "Tantra philosophy",
-                  "Buddhist meditation texts",
+                  "Path to self-realization",
+                  "Song of the Divine",
+                  "Secrets of Kundalini",
+                  "The nature of consciousness",
+                  "Tantric wisdom",
+                  "Paths of meditation",
                 ].map((query) => (
                   <button
                     key={query}

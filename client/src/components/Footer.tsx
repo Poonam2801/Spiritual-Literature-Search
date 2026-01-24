@@ -9,7 +9,7 @@ export function Footer() {
           {/* Source platforms */}
           <div className="text-center">
             <p className="text-sm text-muted-foreground mb-3">
-              Aggregating spiritual literature from
+              Drawing from the wisdom repositories
             </p>
             <div className="flex flex-wrap justify-center gap-4">
               {platforms.map((platform) => (
@@ -36,9 +36,9 @@ export function Footer() {
 
           {/* Made with love */}
           <div className="flex items-center gap-1.5 text-sm text-muted-foreground">
-            <span>Made with</span>
+            <span>Crafted with</span>
             <Heart className="h-4 w-4 text-primary fill-primary" />
-            <span>for seekers of wisdom</span>
+            <span>for those who seek the eternal</span>
           </div>
         </div>
       </div>

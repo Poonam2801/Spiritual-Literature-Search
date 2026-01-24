@@ -9,7 +9,7 @@ export function LoadingState() {
       <div className="flex items-center justify-center gap-3 mb-8">
         <Sparkles className="h-5 w-5 text-primary animate-pulse" />
         <p className="text-lg text-muted-foreground">
-          AI is searching across spiritual literature...
+          Consulting the ancient scrolls...
         </p>
         <Loader2 className="h-5 w-5 text-primary animate-spin" />
       </div>
@@ -57,10 +57,10 @@ export function EmptyState() {
         <BookOpen className="h-10 w-10 text-muted-foreground" />
       </div>
       <h3 className="font-serif text-2xl font-semibold mb-3">
-        No results found
+        The path remains hidden
       </h3>
       <p className="text-muted-foreground max-w-md mx-auto">
-        We couldn't find any books matching your search. Try different keywords or broaden your query to explore more spiritual literature.
+        No sacred texts match your query. Perhaps rephrase your question, or seek with different words to illuminate the way.
       </p>
     </div>
   );

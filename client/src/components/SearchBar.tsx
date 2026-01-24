@@ -45,7 +45,7 @@ export function SearchBar({ onSearch, isLoading, placeholder }: SearchBarProps) 
         </Button>
       </div>
       <p className="text-sm text-muted-foreground mt-3 text-center">
-        Try: "Non-duality for beginners" or "Bhagavad Gita commentaries" or "Yoga philosophy texts"
+        Seek: "The path of devotion" or "Secrets of the Mahavidyas" or "Understanding Brahman"
       </p>
     </form>
   );
