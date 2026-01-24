@@ -21,29 +21,49 @@ export function BookCard({ result }: BookCardProps) {
       data-testid={`card-book-${book.id}`}
     >
       <CardContent className="p-5">
-        <div className="flex flex-col gap-4">
-          {/* Header with source and confidence */}
-          <div className="flex items-center justify-between gap-3 flex-wrap">
-            <SourceBadge source={book.source} />
-            <ConfidenceIndicator score={relevanceScore} />
+        <div className="flex gap-4">
+          {/* Book Cover */}
+          <div className="shrink-0">
+            {book.imageUrl ? (
+              <img 
+                src={book.imageUrl} 
+                alt={`Cover of ${book.title}`}
+                className="w-24 h-32 object-cover rounded-md shadow-sm"
+                onError={(e) => {
+                  e.currentTarget.style.display = 'none';
+                  e.currentTarget.nextElementSibling?.classList.remove('hidden');
+                }}
+              />
+            ) : null}
+            <div className={`w-24 h-32 bg-muted rounded-md flex items-center justify-center ${book.imageUrl ? 'hidden' : ''}`}>
+              <BookOpen className="h-8 w-8 text-muted-foreground" />
+            </div>
           </div>
 
-          {/* Title and Author */}
-          <div>
-            <h3 className="font-serif text-lg font-semibold text-foreground leading-tight line-clamp-2">
-              {book.title}
-            </h3>
-            {book.author && (
-              <p className="text-sm text-muted-foreground mt-1">
-                by {book.author}
-              </p>
-            )}
-          </div>
+          {/* Content */}
+          <div className="flex flex-col gap-3 flex-1 min-w-0">
+            {/* Header with source and confidence */}
+            <div className="flex items-center justify-between gap-3 flex-wrap">
+              <SourceBadge source={book.source} />
+              <ConfidenceIndicator score={relevanceScore} />
+            </div>
 
-          {/* AI-generated description */}
-          <p className="text-sm text-muted-foreground leading-relaxed line-clamp-3">
-            {book.aiDescription || book.description}
-          </p>
+            {/* Title and Author */}
+            <div>
+              <h3 className="font-serif text-lg font-semibold text-foreground leading-tight line-clamp-2">
+                {book.title}
+              </h3>
+              {book.author && (
+                <p className="text-sm text-muted-foreground mt-1">
+                  by {book.author}
+                </p>
+              )}
+            </div>
+
+            {/* AI-generated description */}
+            <p className="text-sm text-muted-foreground leading-relaxed line-clamp-3">
+              {book.aiDescription || book.description}
+            </p>
 
           {/* Match reason if available */}
           {matchReason && relevanceScore < 80 && (
@@ -86,7 +106,7 @@ export function BookCard({ result }: BookCardProps) {
                 </>
               ) : (
                 <span className="text-sm text-muted-foreground italic">
-                  Price not available
+                  Free
                 </span>
               )}
             </div>
@@ -107,6 +127,7 @@ export function BookCard({ result }: BookCardProps) {
                 <ExternalLink className="h-3 w-3" />
               </a>
             </Button>
+          </div>
           </div>
         </div>
       </CardContent>

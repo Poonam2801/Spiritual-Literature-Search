@@ -4,6 +4,7 @@
 A unified portal for discovering spiritual literature across multiple platforms using AI-powered contextual search. Users can search for books on Vedanta, Yoga, Non-duality, Buddhism, and more with natural language queries.
 
 ## Recent Changes
+- **Jan 2026**: Added book cover images to search results and expanded catalog to 40+ titles including Hindi books (Devanagari script)
 - **Jan 2026**: Initial MVP implementation with Gemini AI integration for contextual search
 
 ## Architecture
