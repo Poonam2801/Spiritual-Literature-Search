@@ -154,7 +154,7 @@ export function BookCard({ result }: BookCardProps) {
                 data-testid={`link-book-${book.id}`}
               >
                 <BookOpen className="h-4 w-4" />
-                View on Source
+                {book.source === "google_books" ? "View Details" : "View on Source"}
                 <ExternalLink className="h-3 w-3" />
               </a>
             </Button>

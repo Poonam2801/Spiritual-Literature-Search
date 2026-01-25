@@ -16,6 +16,7 @@ const sourceConfig: Record<BookSource, { name: string; color: string }> = {
   bookish_santa: { name: "Bookish Santa", color: "bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-300" },
   vedic_books: { name: "Vedic Books", color: "bg-purple-100 text-purple-800 dark:bg-purple-900/30 dark:text-purple-300" },
   mlbd: { name: "MLBD", color: "bg-slate-100 text-slate-800 dark:bg-slate-800/30 dark:text-slate-300" },
+  google_books: { name: "Google Books", color: "bg-sky-100 text-sky-800 dark:bg-sky-900/30 dark:text-sky-300" },
 };
 
 export function SourceBadge({ source, className }: SourceBadgeProps) {

@@ -1,14 +1,15 @@
 # Spiritual Literature Contextual Search & Aggregator
 
 ## Overview
-A unified portal for discovering spiritual literature across multiple platforms using AI-powered contextual search. Users can search for books on Vedanta, Yoga, Non-duality, Buddhism, and more with natural language queries.
+A unified portal for discovering spiritual literature across the internet using AI-powered contextual search. Users can search for books on Vedanta, Yoga, Non-duality, Buddhism, and more with natural language queries. The app now searches Google Books to provide unlimited results from across the web.
 
 ## Recent Changes
-- **Jan 2026**: Implemented groundedness-based search with hallucination prevention - only returns books where topics are verified in metadata; added confidence tiers (Strong/Good/Potential Match) and citation display showing WHERE keywords are found in books
-- **Jan 2026**: Enriched book catalog with rich metadata: tableOfContents, theologicalTags, keyTopics, contextualSnippets; added Mahavidya/Chinnamasta specialist texts for testing obscure keywords
-- **Jan 2026**: Expanded to 9 platforms (Amazon, Flipkart, Bookish Santa, Vedic Books, MLBD added); now shows ALL matching books with scores instead of just top 10; client-side filtering for instant results
-- **Jan 2026**: Added book cover images to search results and expanded catalog to 60+ titles including Hindi books (Devanagari script)
-- **Jan 2026**: Initial MVP implementation with Gemini AI integration for contextual search
+- **Jan 2026**: Expanded search to include Google Books API - now shows results from across the entire internet, not just the curated catalog
+- **Jan 2026**: Updated theme to "Mystical & Ancient" aesthetic - deep purple, gold accents, parchment backgrounds; poetic copy throughout
+- **Jan 2026**: Implemented groundedness-based search with hallucination prevention - only returns books where topics are verified in metadata
+- **Jan 2026**: Added confidence tiers (Strong/Good/Potential Match) and citation display showing WHERE keywords are found
+- **Jan 2026**: Enriched book catalog with rich metadata: tableOfContents, theologicalTags, keyTopics, contextualSnippets
+- **Jan 2026**: Expanded to 10 platforms including Google Books for internet-wide search
 
 ## Architecture
 
@@ -17,21 +18,24 @@ A unified portal for discovering spiritual literature across multiple platforms 
 - **UI Framework**: Shadcn UI components with Tailwind CSS
 - **State Management**: TanStack Query for server state
 - **Routing**: Wouter
-- **Theme**: Warm, scholarly earth tones with Lora/Playfair Display fonts
+- **Theme**: Mystical & Ancient - deep purple (270° hue), gold accents (43° hue), parchment backgrounds
 
 ### Backend (Express + TypeScript)
 - **Location**: `server/`
 - **AI Integration**: Gemini 2.5 Flash via Replit AI Integrations
-- **Storage**: In-memory book catalog (no database for MVP)
+- **External API**: Google Books API for internet-wide search
+- **Storage**: In-memory book catalog + live Google Books results
 
 ### Key Components
-- `client/src/components/SearchBar.tsx` - Main search input
-- `client/src/components/BookCard.tsx` - Result card with confidence indicator
-- `client/src/components/SourceFilter.tsx` - Filter by source platform
-- `server/aiSearch.ts` - AI-powered contextual search logic
-- `server/bookCatalog.ts` - Sample book catalog data
+- `client/src/components/SearchBar.tsx` - Main search input with poetic prompts
+- `client/src/components/BookCard.tsx` - Result card with confidence indicator and source attribution
+- `client/src/components/SourceFilter.tsx` - Filter by source platform (including Google Books)
+- `server/aiSearch.ts` - AI-powered search combining catalog + Google Books
+- `server/googleBooks.ts` - Google Books API integration
+- `server/bookCatalog.ts` - Curated book catalog data
 
-## Data Sources (Simulated)
+## Data Sources
+- **Google Books**: Internet-wide search for spiritual texts (NEW)
 - **Exotic India**: Premium spiritual books
 - **Gita Press**: Affordable Hindu texts
 - **Chaukhamba**: Academic/Ayurvedic literature
@@ -43,8 +47,8 @@ A unified portal for discovering spiritual literature across multiple platforms 
 - **MLBD**: Academic publisher since 1903
 
 ## API Endpoints
-- `POST /api/search` - AI-powered contextual search
-- `GET /api/books` - List all books (optional `?source=` filter)
+- `POST /api/search` - AI-powered contextual search (catalog + Google Books)
+- `GET /api/books` - List all books from catalog (optional `?source=` filter)
 - `GET /api/books/:id` - Get single book by ID
 
 ## Environment Variables
@@ -58,6 +62,8 @@ npm run dev
 The application runs on port 5000 with frontend served through Vite.
 
 ## User Preferences
-- Scholarly, warm earth-tone design aesthetic
+- Mystical & Ancient design aesthetic (deep purple, gold, parchment)
+- Poetic, evocative copy throughout ("Seek the Ancient Wisdom", "Consulting the ancient scrolls")
 - Elegant serif typography for spiritual content feel
 - Card-based results with clear confidence indicators
+- Internet-wide search for maximum book discovery

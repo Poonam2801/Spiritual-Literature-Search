@@ -20,7 +20,7 @@ export function HeroSection() {
         </div>
         <div className="flex items-center gap-2 px-4 py-2 bg-card rounded-md border border-card-border">
           <Scroll className="h-4 w-4 text-primary" />
-          <span className="text-sm font-medium">9 Sacred Archives</span>
+          <span className="text-sm font-medium">Unlimited Sacred Texts</span>
         </div>
         <div className="flex items-center gap-2 px-4 py-2 bg-card rounded-md border border-card-border">
           <BookMarked className="h-4 w-4 text-primary" />
