@@ -69,13 +69,15 @@ export async function searchGoogleBooks(
     url.searchParams.set("maxResults", String(Math.min(maxResults, 40)));
     url.searchParams.set("printType", "books");
     url.searchParams.set("orderBy", "relevance");
-    // Focus on books that might have spiritual/religious content
-    url.searchParams.set("langRestrict", "en");
     
     const response = await fetch(url.toString());
     
     if (!response.ok) {
-      console.error("Google Books API error:", response.status);
+      if (response.status === 429) {
+        console.warn("Google Books API rate limited (429) - returning empty results");
+      } else {
+        console.error("Google Books API error:", response.status);
+      }
       return [];
     }
     

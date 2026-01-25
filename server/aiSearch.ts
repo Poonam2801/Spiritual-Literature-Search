@@ -73,15 +73,21 @@ export async function searchBooksWithAI(
     searchInternet ? searchGoogleBooks(query, 25) : Promise.resolve([]),
   ]);
 
-  // Combine all books for AI evaluation
-  const allBooks = [...catalogBooks, ...internetBooks];
+  // Combine all books for AI evaluation - prioritize internet results for broader discovery
+  // Take proportional samples: more internet books since user wants "all books from internet"
+  const maxCatalogBooks = Math.min(catalogBooks.length, 15);
+  const maxInternetBooks = Math.min(internetBooks.length, 35);
+  
+  const sampledCatalog = catalogBooks.slice(0, maxCatalogBooks);
+  const sampledInternet = internetBooks.slice(0, maxInternetBooks);
+  const allBooks = [...sampledInternet, ...sampledCatalog]; // Internet first for priority
 
   if (allBooks.length === 0) {
     return { results: [], searchTime: (Date.now() - startTime) / 1000 };
   }
 
   // Create book summary for AI (limit to prevent token overflow)
-  const bookSummaries = allBooks.slice(0, 50).map((book) => ({
+  const bookSummaries = allBooks.map((book) => ({
     id: book.id,
     title: book.title,
     author: book.author,
@@ -158,6 +164,9 @@ IMPORTANT:
         const book = bookMap.get(match.bookId);
         if (!book) return acc;
 
+        // Mark catalog books as grounded, internet books as verified by AI but not grounded to source
+        const isFromCatalog = book.source !== "google_books";
+        
         acc.push({
           book: {
             ...book,
@@ -167,7 +176,7 @@ IMPORTANT:
           matchReason: match.matchReason,
           confidenceTier: getConfidenceTier(match.relevanceScore),
           matchedTopics: match.matchedTopics,
-          isGrounded: true,
+          isGrounded: isFromCatalog, // Only catalog books have verified metadata
         });
         return acc;
       }, [])
