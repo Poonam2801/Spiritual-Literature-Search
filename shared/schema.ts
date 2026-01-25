@@ -1,7 +1,7 @@
 import { z } from "zod";
 
 // Book sources - the platforms we aggregate from
-export const bookSources = ["exotic_india", "gita_press", "chaukhamba", "archive_org", "amazon", "flipkart", "bookish_santa", "vedic_books", "mlbd"] as const;
+export const bookSources = ["exotic_india", "gita_press", "chaukhamba", "archive_org", "amazon", "flipkart", "bookish_santa", "vedic_books", "mlbd", "google_books"] as const;
 export type BookSource = typeof bookSources[number];
 
 // Book schema for spiritual literature with enhanced metadata for groundedness
@@ -147,6 +147,13 @@ export const platforms: SourcePlatform[] = [
     description: "Motilal Banarsidass - academic publisher since 1903",
     baseUrl: "https://www.mlbd.com",
     logoColor: "#2C3E50",
+  },
+  {
+    id: "google_books",
+    name: "Google Books",
+    description: "Discover spiritual texts from across the world",
+    baseUrl: "https://books.google.com",
+    logoColor: "#4285F4",
   },
 ];
 
