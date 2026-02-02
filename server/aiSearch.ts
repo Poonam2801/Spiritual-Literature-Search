@@ -1,6 +1,7 @@
 import { GoogleGenAI } from "@google/genai";
 import { bookCatalog } from "./bookCatalog";
 import { searchGoogleBooks } from "./googleBooks";
+import { searchWeb } from "./webSearch";
 import type { Book, SearchResult, BookSource, MatchConfidenceTier } from "@shared/schema";
 
 // Initialize Gemini AI using Replit AI Integrations
@@ -63,24 +64,31 @@ export async function searchBooksWithAI(
 
   // Determine which sources to search
   const searchCatalog = !sources || sources.length === 0 || 
-    sources.some(s => s !== "google_books");
+    sources.some(s => s !== "google_books" && s !== "web_search");
   const searchInternet = !sources || sources.length === 0 || 
     sources.includes("google_books");
+  const searchEntireWeb = !sources || sources.length === 0 || 
+    sources.includes("web_search");
 
-  // Search both catalog and Google Books in parallel
-  const [catalogBooks, internetBooks] = await Promise.all([
+  // Search catalog, Google Books, and entire web in parallel for comprehensive results
+  const [catalogBooks, googleBooksResults, webSearchResults] = await Promise.all([
     searchCatalog ? getCatalogBooks(sources) : Promise.resolve([]),
     searchInternet ? searchGoogleBooks(query, 25) : Promise.resolve([]),
+    searchEntireWeb ? searchWeb(query, 40) : Promise.resolve([]), // More web results for broader discovery
   ]);
 
-  // Combine all books for AI evaluation - prioritize internet results for broader discovery
-  // Take proportional samples: more internet books since user wants "all books from internet"
+  // Combine all books for AI evaluation - prioritize web results for the broadest discovery
+  // Take proportional samples to balance coverage: more web books since user wants "entire web"
   const maxCatalogBooks = Math.min(catalogBooks.length, 15);
-  const maxInternetBooks = Math.min(internetBooks.length, 35);
+  const maxGoogleBooks = Math.min(googleBooksResults.length, 25);
+  const maxWebBooks = Math.min(webSearchResults.length, 50); // Significantly more web results
   
   const sampledCatalog = catalogBooks.slice(0, maxCatalogBooks);
-  const sampledInternet = internetBooks.slice(0, maxInternetBooks);
-  const allBooks = [...sampledInternet, ...sampledCatalog]; // Internet first for priority
+  const sampledGoogle = googleBooksResults.slice(0, maxGoogleBooks);
+  const sampledWeb = webSearchResults.slice(0, maxWebBooks);
+  
+  // Order: web search first (most comprehensive), then Google Books, then catalog
+  const allBooks = [...sampledWeb, ...sampledGoogle, ...sampledCatalog];
 
   if (allBooks.length === 0) {
     return { results: [], searchTime: (Date.now() - startTime) / 1000 };
@@ -198,14 +206,14 @@ function getCatalogBooks(sources?: BookSource[]): Book[] {
     return bookCatalog;
   }
   
-  // Filter out google_books since that's handled separately
-  const catalogSources = sources.filter(s => s !== "google_books");
+  // Filter out google_books and web_search since those are handled separately
+  const catalogSources = sources.filter(s => s !== "google_books" && s !== "web_search");
   if (catalogSources.length === 0) {
     return [];
   }
   
   return bookCatalog.filter((book) => {
-    // Type assertion since book.source is from the catalog (not google_books)
+    // Type assertion since book.source is from the catalog (not google_books or web_search)
     return (catalogSources as readonly string[]).includes(book.source);
   });
 }
