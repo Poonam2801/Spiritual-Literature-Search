@@ -1,17 +1,13 @@
-import { GoogleGenAI } from "@google/genai";
+import { GoogleGenerativeAI } from "@google/generative-ai";
 import { bookCatalog } from "./bookCatalog";
 import { searchGoogleBooks } from "./googleBooks";
 import { searchWeb } from "./webSearch";
 import type { Book, SearchResult, BookSource, MatchConfidenceTier } from "@shared/schema";
 
 // Initialize Gemini AI using Replit AI Integrations
-const ai = new GoogleGenAI({
-  apiKey: process.env.AI_INTEGRATIONS_GEMINI_API_KEY,
-  httpOptions: {
-    apiVersion: "",
-    baseUrl: process.env.AI_INTEGRATIONS_GEMINI_BASE_URL,
-  },
-});
+const ai = new GoogleGenerativeAI(
+  process.env.AI_INTEGRATIONS_GEMINI_API_KEY || ""
+);
 
 // System prompt for AI-powered spiritual book search with internet results
 const SYSTEM_PROMPT = `You are an expert librarian specializing in spiritual and religious literature from various traditions. Your task is to evaluate and rank books based on their relevance to the user's spiritual/philosophical query.
@@ -108,8 +104,8 @@ export async function searchBooksWithAI(
   }));
 
   try {
-    const response = await ai.models.generateContent({
-      model: "gemini-2.5-flash",
+    const model = ai.getGenerativeModel({ model: "gemini-2.5-flash" });
+    const response = await model.generateContent({
       contents: [
         {
           role: "user",
@@ -147,7 +143,7 @@ IMPORTANT:
       ],
     });
 
-    const responseText = response.text || "";
+    const responseText = response.response.text() || "";
     
     // Parse JSON from response
     let jsonText = responseText;

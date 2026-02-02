@@ -11,6 +11,40 @@ interface WebSearchResult {
   publicationDate?: string;
 }
 
+// Try to heuristically extract title and author from user queries like
+// "smita venkatesh sri vidya books" -> { title: 'sri vidya', author: 'smita venkatesh' }
+function parseQueryForTitleAuthor(query: string): { title?: string; author?: string } {
+  const cleaned = query.replace(/\bbooks?\b|\bbooklist\b/gi, "").trim();
+  const parts = cleaned.split(/[,\-–:|]/).map(p => p.trim()).filter(Boolean);
+
+  // If user provided a comma-separated author, title pair, prefer that
+  if (parts.length >= 2) {
+    // assume last part is title, first is author
+    const author = parts[0];
+    const title = parts.slice(1).join(" ");
+    return { title, author };
+  }
+
+  // Heuristic: if the query contains two capitalized words at start, treat them as author
+  const words = cleaned.split(/\s+/).filter(Boolean);
+  if (words.length >= 3) {
+    // treat last 1-2 words as potential title phrase if they look like a known series term
+    const lower = cleaned.toLowerCase();
+    const seriesIndicators = ["sri", "vidya", "gita", "upanishad", "sutra"];
+    for (const ind of seriesIndicators) {
+      if (lower.includes(ind)) {
+        // take substring from the indicator to end as title
+        const idx = lower.indexOf(ind);
+        const title = cleaned.substring(idx).trim();
+        const author = cleaned.substring(0, idx).replace(/[,\-–:|]$/g, "").trim();
+        if (author && title) return { title, author };
+      }
+    }
+  }
+
+  return {};
+}
+
 /**
  * Searches the entire web for books using multiple methods:
  * 1. Google Search with book-specific queries
@@ -23,17 +57,23 @@ export async function searchWeb(
   maxResults: number = 30
 ): Promise<Book[]> {
   try {
-    // Run multiple search strategies in parallel for comprehensive coverage
+    // Parse query to extract author + topic
+    const { author, title, topics } = parseQueryAdvanced(query);
+
+    // Run searches with parsed context
     const [openLibraryBooks, googleSearchBooks] = await Promise.all([
       searchOpenLibrary(query, Math.floor(maxResults / 2)),
       searchGoogleForBooks(query, Math.floor(maxResults / 2)),
     ]);
 
-    // Combine and deduplicate results
+    // Combine, deduplicate, and rank by author match + topic relevance
     const allBooks = [...openLibraryBooks, ...googleSearchBooks];
     const deduplicatedBooks = deduplicateBooks(allBooks);
+    
+    // Boost author matches to top
+    const ranked = rankByAuthorAndTopics(deduplicatedBooks, author, topics);
 
-    return deduplicatedBooks.slice(0, maxResults);
+    return ranked.slice(0, maxResults);
   } catch (error) {
     console.error("Web search error:", error);
     return [];
@@ -49,10 +89,23 @@ async function searchOpenLibrary(
   maxResults: number = 15
 ): Promise<Book[]> {
   try {
+    const { author, title, topics } = parseQueryAdvanced(query);
     const searchUrl = new URL("https://openlibrary.org/search.json");
-    searchUrl.searchParams.set("q", query);
-    searchUrl.searchParams.set("limit", String(maxResults));
-    searchUrl.searchParams.set("fields", "*,key,isbn");
+
+    // Priority: author > title > general query
+    if (author) {
+      searchUrl.searchParams.set("author", author);
+      if (title) {
+        searchUrl.searchParams.set("title", title);
+      }
+    } else if (title) {
+      searchUrl.searchParams.set("title", title);
+    } else {
+      searchUrl.searchParams.set("q", query);
+    }
+
+    searchUrl.searchParams.set("limit", String(maxResults * 2)); // Get more, filter later
+    searchUrl.searchParams.set("fields", "*,key,isbn,author_name,subject,first_publish_year,first_sentence");
 
     const response = await fetch(searchUrl.toString());
 
@@ -69,7 +122,6 @@ async function searchOpenLibrary(
 
     const books: Book[] = data.docs
       .filter((doc: any) => {
-        // Filter for actual books with meaningful data
         return (
           doc.title &&
           (doc.author_name || doc.publisher) &&
@@ -356,11 +408,18 @@ function buildBookSearchQuery(userQuery: string): string {
     userQuery.toLowerCase().includes(keyword)
   );
 
+  // Remove common filler words
+  const cleaned = userQuery.replace(/\bbooks?\b/gi, "").trim();
+
+  // Prefer exact phrase matching when user types multi-word queries
+  const needsQuote = cleaned.split(/\s+/).length > 1;
+  const phrase = needsQuote ? `"${cleaned}"` : cleaned;
+
   if (!hasBookKeyword) {
-    return `${userQuery} book spiritual literature`;
+    return `${phrase} book spiritual literature`;
   }
 
-  return userQuery;
+  return phrase;
 }
 
 /**
