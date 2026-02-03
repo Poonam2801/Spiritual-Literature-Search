@@ -11,38 +11,132 @@ interface WebSearchResult {
   publicationDate?: string;
 }
 
-// Try to heuristically extract title and author from user queries like
-// "smita venkatesh sri vidya books" -> { title: 'sri vidya', author: 'smita venkatesh' }
-function parseQueryForTitleAuthor(query: string): { title?: string; author?: string } {
+/**
+ * Advanced query parsing to extract structured data from natural language queries
+ */
+function parseQueryAdvanced(query: string): {
+  author?: string;
+  title?: string;
+  topics?: string[];
+} {
   const cleaned = query.replace(/\bbooks?\b|\bbooklist\b/gi, "").trim();
   const parts = cleaned.split(/[,\-–:|]/).map(p => p.trim()).filter(Boolean);
+
+  // Initialize result
+  const result: { author?: string; title?: string; topics?: string[] } = {
+    topics: []
+  };
+
+  // Extract potential topics (spiritual concepts)
+  const topicKeywords = [
+    "meditation", "yoga", "tantra", "vedanta", "buddhism", "zen",
+    "mindfulness", "chakra", "kundalini", "advaita", "non-duality",
+    "sufism", "mysticism", "biography", "philosophy"
+  ];
+
+  const lowerQuery = cleaned.toLowerCase();
+  result.topics = topicKeywords.filter(t => lowerQuery.includes(t));
 
   // If user provided a comma-separated author, title pair, prefer that
   if (parts.length >= 2) {
     // assume last part is title, first is author
-    const author = parts[0];
-    const title = parts.slice(1).join(" ");
-    return { title, author };
+    result.author = parts[0];
+    result.title = parts.slice(1).join(" ");
+    return result;
   }
 
   // Heuristic: if the query contains two capitalized words at start, treat them as author
   const words = cleaned.split(/\s+/).filter(Boolean);
+
+  // Check for "by [Author]" pattern
+  const byIndex = words.findIndex(w => w.toLowerCase() === "by");
+  if (byIndex > 0 && byIndex < words.length - 1) {
+    result.title = words.slice(0, byIndex).join(" ");
+    result.author = words.slice(byIndex + 1).join(" ");
+    return result;
+  }
+
+  // Basic heuristic for Author vs Title
   if (words.length >= 3) {
     // treat last 1-2 words as potential title phrase if they look like a known series term
-    const lower = cleaned.toLowerCase();
-    const seriesIndicators = ["sri", "vidya", "gita", "upanishad", "sutra"];
+    const seriesIndicators = ["sri", "vidya", "gita", "upanishad", "sutra", "yoga"];
+
+    // Check if query starts with known author names (simplified list)
+    const knownAuthors = ["osho", "sadhguru", "krishnamurti", "ramana", "vivekananda", "aurobindo"];
+    if (knownAuthors.some(a => lowerQuery.startsWith(a))) {
+      result.author = words.slice(0, 2).join(" ");
+      if (words.length > 2) result.title = words.slice(2).join(" ");
+      return result;
+    }
+
     for (const ind of seriesIndicators) {
-      if (lower.includes(ind)) {
+      if (lowerQuery.includes(ind)) {
         // take substring from the indicator to end as title
-        const idx = lower.indexOf(ind);
-        const title = cleaned.substring(idx).trim();
-        const author = cleaned.substring(0, idx).replace(/[,\-–:|]$/g, "").trim();
-        if (author && title) return { title, author };
+        const idx = lowerQuery.indexOf(ind);
+        // Find rough word boundary
+        const titleStart = lowerQuery.lastIndexOf(" ", idx);
+
+        if (titleStart !== -1) {
+          // This is very rough, but functional for now
+          const titlePart = cleaned.substring(titleStart).trim();
+          const authorPart = cleaned.substring(0, titleStart).replace(/[,\-–:|]$/g, "").trim();
+          if (authorPart && titlePart) {
+            result.title = titlePart;
+            result.author = authorPart;
+            return result;
+          }
+        }
       }
     }
   }
 
-  return {};
+  // Fallback: entire query as topic/title
+  if (!result.title) result.title = cleaned;
+
+  return result;
+}
+
+/**
+ * Rank books by relevance to author and topics
+ */
+function rankByAuthorAndTopics(
+  books: Book[],
+  author?: string,
+  topics?: string[]
+): Book[] {
+  if (!author && (!topics || topics.length === 0)) {
+    return books;
+  }
+
+  return books.sort((a, b) => {
+    let scoreA = 0;
+    let scoreB = 0;
+
+    // Author match scoring
+    if (author) {
+      const authorLower = author.toLowerCase();
+      if (a.author && a.author.toLowerCase().includes(authorLower)) scoreA += 50;
+      if (b.author && b.author.toLowerCase().includes(authorLower)) scoreB += 50;
+    }
+
+    // Topic match scoring
+    if (topics && topics.length > 0) {
+      const aText = (a.title + " " + a.description + " " + (a.keyTopics?.join(" ") || "")).toLowerCase();
+      const bText = (b.title + " " + b.description + " " + (b.keyTopics?.join(" ") || "")).toLowerCase();
+
+      for (const topic of topics) {
+        if (aText.includes(topic)) scoreA += 10;
+        if (bText.includes(topic)) scoreB += 10;
+      }
+    }
+
+    // Web results freshness boost (prefer newer items if standard relevance is equal)
+    // This helps "newly published" books surface
+    if (a.source === 'web_search') scoreA += 5;
+    if (b.source === 'web_search') scoreB += 5;
+
+    return scoreB - scoreA;
+  });
 }
 
 /**
@@ -69,7 +163,7 @@ export async function searchWeb(
     // Combine, deduplicate, and rank by author match + topic relevance
     const allBooks = [...openLibraryBooks, ...googleSearchBooks];
     const deduplicatedBooks = deduplicateBooks(allBooks);
-    
+
     // Boost author matches to top
     const ranked = rankByAuthorAndTopics(deduplicatedBooks, author, topics);
 
@@ -98,9 +192,9 @@ async function searchOpenLibrary(
       if (title) {
         searchUrl.searchParams.set("title", title);
       }
-    } else if (title) {
-      searchUrl.searchParams.set("title", title);
     } else {
+      // If no definitive author identified, use general search 'q'
+      // This is safer because the user might have entered an author name that we parsed as a title
       searchUrl.searchParams.set("q", query);
     }
 
@@ -255,45 +349,132 @@ async function searchBookPlatform(
 /**
  * Search Amazon Books (via public API alternatives)
  */
+/**
+ * Search Amazon Books (Scraping implementation)
+ */
 async function searchAmazonBooks(
   query: string,
   maxResults: number
 ): Promise<Book[]> {
   try {
-    // Using RapidAPI Amazon API or similar public service
-    // For now, returning a simplified version - in production use proper API
-    const encodedQuery = encodeURIComponent(query);
-    const searchUrl = `https://api.rainforestapi.com/request?api_key=${process.env.RAINFOREST_API_KEY || "demo"}&type=search&amazon_domain=amazon.com&search_term=${encodedQuery}&num_results=${maxResults}`;
+    // Import cheerio dynamically to avoid top-level require if not used
+    const cheerio = await import("cheerio");
 
-    const response = await fetch(searchUrl);
+    // Use a mobile user agent as the HTML structure is sometimes simpler, 
+    // or a standard desktop one. Rotating them is best but we start simple.
+    const userAgent = "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36";
+
+    const encodedQuery = encodeURIComponent(query);
+    // Search in the "stripbooks" (Books) category
+    const searchUrl = `https://www.amazon.com/s?k=${encodedQuery}&i=stripbooks&ref=nb_sb_noss`;
+
+    const response = await fetch(searchUrl, {
+      headers: {
+        "User-Agent": userAgent,
+        "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8",
+        "Accept-Language": "en-US,en;q=0.9",
+      }
+    });
 
     if (!response.ok) {
+      console.warn("Amazon search returned status:", response.status);
       return [];
     }
 
-    const data = await response.json();
+    const html = await response.text();
+    const $ = cheerio.load(html);
+    const books: Book[] = [];
 
-    if (!data.search_results) {
-      return [];
+    // Select search result items
+    // Amazon selectors change frequently, so we try a few common patterns
+    // Try multiple selectors
+    let items = $("div[data-component-type='s-search-result']");
+    if (items.length === 0) {
+      items = $(".s-result-item");
     }
 
-    const books: Book[] = data.search_results
-      .filter((result: any) => result.type === "PRODUCT")
-      .map((result: any) => ({
-        id: `amazon_${result.asin}`,
-        title: result.title,
-        author: result.author || "Unknown",
-        description: result.description || "Available on Amazon",
-        source: "web_search" as const,
-        sourceUrl: result.link,
-        price: result.price ? parseFloat(result.price.value) : null,
-        currency: (result.price?.currency || "USD") as "USD" | "INR",
-        isAvailable: !result.out_of_stock,
-        language: "English",
-        category: "Spirituality",
-        imageUrl: result.image,
-        keyTopics: [query],
-      }));
+    items.each((i, el) => {
+      if (books.length >= maxResults) return false;
+
+      const $el = $(el);
+      const asin = $el.attr("data-asin");
+
+      // Title - Search for the main title link text
+      let title = $el.find("span.a-size-medium").first().text().trim();
+      if (!title) {
+        title = $el.find("span.a-size-base-plus").first().text().trim();
+      }
+      if (!title) {
+        title = $el.find("h2 span").first().text().trim();
+      }
+
+      // Link
+      let relativeLink = $el.find("h2 a").attr("href");
+      if (!relativeLink) {
+        relativeLink = $el.find("a.a-link-normal.s-no-outline").attr("href");
+      }
+      if (!relativeLink) {
+        relativeLink = $el.find("a.a-link-normal").attr("href");
+      }
+
+      const sourceUrl = relativeLink ? `https://www.amazon.com${relativeLink}` : "";
+
+      // Author (often in a row like "by Author Name | Date")
+      const authorRow = $el.find("div.a-row.a-size-base.a-color-secondary");
+      let author = "Unknown";
+      if (authorRow.length) {
+        // Try to find the "by ..." part
+        const text = authorRow.text().trim();
+        // Look for "by [Author]"
+        const byMatch = text.match(/by\s+([^\d|]+)/i);
+        if (byMatch) {
+          author = byMatch[1].trim();
+          // Cleanup trailing garbage using cross-platform regex
+          author = author.replace(/[\n\r][\s\S]*/, "").trim();
+          // Remove "and" or other common noise if it's too long
+          if (author.length > 50) {
+            const authors = author.split(/,| and /);
+            author = authors[0].trim();
+          }
+        } else {
+          const authorLink = authorRow.find("a");
+          if (authorLink.length) {
+            author = authorLink.first().text().trim();
+          }
+        }
+      }
+
+      // Image
+      const img = $el.find("img.s-image");
+      const imageUrl = img.attr("src") || null;
+
+      // Price
+      const priceWhole = $el.find(".a-price-whole").first().text().replace(/[,.]/g, "");
+      const priceFraction = $el.find(".a-price-fraction").first().text();
+      let price: number | null = null;
+      if (priceWhole) {
+        price = parseFloat(`${priceWhole}.${priceFraction || "00"}`);
+      }
+
+      // Only add if we have at least a title and it looks real
+      if (title && asin) {
+        books.push({
+          id: `amazon_${asin}`,
+          title,
+          author,
+          description: "Available on Amazon",
+          source: "web_search", // kept as web_search to reuse existing UI logic or can be "amazon" if schema supports
+          sourceUrl,
+          price,
+          currency: "USD", // Default to USD for .com
+          isAvailable: true,
+          language: "English",
+          category: "Spirituality",
+          imageUrl,
+          keyTopics: [query],
+        });
+      }
+    });
 
     return books;
   } catch (error) {
